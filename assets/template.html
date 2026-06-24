@@ -1,0 +1,147 @@
+<!-- PBU Recruitment Dashboard Template v5.6 — __DATE__ -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PBU2026全球招聘数据看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--text:#1a1a2e;--text2:#8c8fa0;--accent:#3b82f6;--green:#10b981;--amber:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--gap:12px;--r:10px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+.wrap{max-width:1520px;margin:0 auto;padding:var(--gap)}
+.hdr{background:linear-gradient(135deg,#0a1628,#132444,#0d2848);color:#fff;padding:18px 24px;border-radius:var(--r);margin-bottom:var(--gap)}
+.hdr h1{font-size:20px;font-weight:700}
+.hdr .meta{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px}
+.hdr .cal{margin-top:8px;font-size:10px;color:rgba(255,255,255,.4);line-height:1.8}
+.hdr .cal div{margin-bottom:2px}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--gap);margin-bottom:var(--gap)}
+.kpi-card{background:var(--card);border-radius:var(--r);padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.kpi-card .kpi-label{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.kpi-card .kpi-val{font-size:32px;font-weight:800}
+.kpi-card .kpi-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.kpi-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:500}
+.tag-blue{background:#eff6ff;color:#2563eb}.tag-green{background:#ecfdf5;color:#059669}
+.tag-amber{background:#fffbeb;color:#d97706}.tag-red{background:#fef2f2;color:#dc2626}
+.tabs{display:flex;gap:2px;margin-bottom:var(--gap);background:var(--card);border-radius:var(--r);padding:3px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow-x:auto}
+.tab-btn{flex:1;padding:9px 12px;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);border-radius:7px;transition:all .15s;text-align:center;white-space:nowrap}
+.tab-btn:hover{background:#f3f4f6}
+.tab-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 6px rgba(59,130,246,.25)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-bottom:var(--gap)}
+.g3{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-bottom:0}
+.card{background:var(--card);border-radius:var(--r);padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card h3{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.card h3::before{content:'';width:3px;height:14px;background:var(--accent);border-radius:2px;flex-shrink:0}
+.card canvas{max-height:320px}
+.card.full{grid-column:1/-1}
+.tbl-scroll{max-height:520px;overflow-y:auto}
+.tbl-scroll::-webkit-scrollbar{width:5px}
+.tbl-scroll::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+.dt{width:100%;border-collapse:collapse;font-size:11px}
+.dt thead th{text-align:left;padding:8px 9px;border-bottom:2px solid #e9ecef;color:var(--text2);font-weight:600;font-size:10px;white-space:nowrap;position:sticky;top:0;background:#f8f9fa;z-index:2}
+.dt tbody td{padding:7px 9px;border-bottom:1px solid #f5f5f5;font-size:11px}
+.dt tbody tr:hover{background:#f8faff}
+.dt tbody tr.row-zp{background:#fff8f0}.dt tbody tr.row-off{background:#f0fdf4}.dt tbody tr.row-done{background:#f0f7ff}
+.dt tbody tr.row-pause{background:#fdf2f8}
+.badge{display:inline-block;padding:2px 7px;border-radius:9px;font-size:9px;font-weight:500}
+.b-zp{background:#fff3e0;color:#e65100}.b-off{background:#e8f5e9;color:#2e7d32}.b-done{background:#e3f2fd;color:#1565c0}
+.b-pause{background:#fce4ec;color:#c62828}
+.flt-bar{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.flt-bar input,.flt-bar select{padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;font-size:11px;outline:none;background:#fff}
+.flt-bar input:focus,.flt-bar select:focus{border-color:var(--accent)}
+.flt-bar input{width:200px}
+.pscroll{max-height:600px;overflow-y:auto;padding-right:4px}
+.pscroll::-webkit-scrollbar{width:5px}
+.pscroll::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+.pcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--gap)}
+.pcard{background:var(--card);border-radius:var(--r);padding:14px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04);border-left:3px solid var(--accent)}
+.pcard .pn{font-size:14px;font-weight:600;margin-bottom:6px}
+.pcard .pgs{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-size:11px}
+.pcard .pgs .pg{display:flex;justify-content:space-between}
+.pcard .pgs .pgv{font-weight:600}
+.pcard .pbar{height:4px;background:#e5e7eb;border-radius:2px;margin-top:6px;display:flex;overflow:hidden}
+.pcard .pbar-seg{height:100%}
+.pcard .prates{font-size:10px;color:var(--text2);margin-top:5px;border-top:1px solid #f0f0f0;padding-top:5px}
+footer{text-align:center;color:var(--text2);font-size:10px;padding:12px;margin-top:6px}
+@media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}.tabs{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hdr">
+<h1>PBU2026全球招聘数据看板</h1>
+<div class="meta">数据截止日期：__DATE__</div>
+<div class="cal"><div>数据口径：</div>
+<div>1. 岗位数据来源于PBU2026全球招聘Excel看板</div>
+<div>2. 数据周期为2026年结束的招聘需求时间</div>
+<div>3. 该看板漏斗分析仅展示未入职招聘需求的招聘情况，已入职需求不展示具体数据</div>
+<div>4. 该数据包括PBU体系内+体系外所有招聘数据，具体结果以SSC每周招聘达成看板为主</div></div>
+</header>
+<section class="kpi-row" id="kpiRow"></section>
+<nav class="tabs" id="tabNav"></nav>
+<section class="tab-content active" id="tab-funnel"><div class="g2"><div class="card"><h3>全年整体招聘漏斗</h3><canvas id="c-funnel" style="max-height:280px"></canvas></div><div class="card"><h3>招聘转化率分析</h3><canvas id="c-rate"></canvas></div></div><div class="card full" style="margin-top:var(--gap)"><h3>全年岗位漏斗明细表</h3><div class="flt-bar"><input type="text" id="dtSearch" placeholder="搜索职位/部门/负责人..." oninput="rdt()"><select id="dtStatus" onchange="rdt()"><option value="all">全部状态</option><option value="正常招聘">招聘中</option><option value="已发offer待入职">已发Offer待入职</option><option value="已入职">已入职</option><option value="暂停招聘">暂停招聘</option></select><select id="dtRegion" onchange="rdt()"><option value="all">全部区域</option><option value="国内">国内</option><option value="海外">海外</option></select><select id="dtCat" onchange="rdt()"><option value="all">全部类别</option></select></div><div class="tbl-scroll" id="detailTbl"></div></div></section>
+<section class="tab-content" id="tab-current"><div class="g2"><div class="card"><h3>在招岗位招聘漏斗</h3><canvas id="c-curfunnel" style="max-height:240px"></canvas></div><div class="card"><h3>在招岗位部门分布</h3><canvas id="c-curdept"></canvas></div></div><div class="card full" style="margin-top:var(--gap)"><h3>在招岗位逐条分析</h3><div class="flt-bar"><input type="text" id="curSearch" placeholder="搜索职位/部门/负责人..." oninput="rCurTbl()"><select id="curStatus" onchange="rCurTbl()"><option value="all">全部状态</option><option value="正常招聘">招聘中</option><option value="已发offer待入职">已发Offer待入职</option></select><select id="curDept" onchange="rCurTbl()"><option value="all">全部部门</option></select></div><div class="tbl-scroll" id="curTbl"></div></div></section>
+<section class="tab-content" id="tab-dept"><div class="g3"><div class="card"><h3>部门CV-Offer漏斗对比</h3><canvas id="c-deptfunnel" style="max-height:420px"></canvas></div><div class="card"><h3>部门岗位状态分布</h3><canvas id="c-deptstatus" style="max-height:420px"></canvas></div></div><div class="card full" style="margin-top:var(--gap)"><h3>部门维度招聘数据明细</h3><div class="tbl-scroll" id="deptTbl"></div></div></section>
+<section class="tab-content" id="tab-person"><div class="g2"><div class="card"><h3>负责人 CV-to-Offer 转化率排行</h3><canvas id="c-person-rate" style="max-height:280px"></canvas></div><div class="card"><h3>负责人 Offer 产出排行</h3><canvas id="c-person-offer" style="max-height:280px"></canvas></div></div><div class="card full" style="margin-top:var(--gap)"><h3>负责人综合数据排行榜</h3><div class="tbl-scroll" id="personTbl"></div></div></section>
+<section class="tab-content" id="tab-alert"><div class="card full"><h3>即将超周期岗位预警</h3><div style="font-size:11px;color:var(--text2);margin-bottom:12px">预警规则：已超过招聘周期结束时间的岗位，或距离周期结束不足14天的岗位。</div><div class="tbl-scroll" id="alertTbl"></div></div></section>
+<footer>PBU2026全球招聘数据看板 · 数据来源：2026 PBU全球招聘需求及周汇报监控表 · 生成于 __DATE__</footer>
+</div>
+<script src="dd_v5.js"></script>
+<script>
+document.getElementById("tabNav").innerHTML=[["funnel","📊 全年招聘漏斗 & 明细","active"],["current","🔄 在招岗位",""],["dept","🏢 部门维度",""],["person","👤 负责人维度",""],["alert","⚠️ 超周期预警",""]].map(function(t){return '<button class="tab-btn '+t[2]+'" data-tab="'+t[0]+'">'+t[1]+'</button>';}).join("");
+var C=["#4C72B0","#DD8452","#55A868","#C44E52","#8172B3","#937860","#8C6BAE","#DA8BC3","#7EA7D8","#F4A460"];
+var FN_CN=["获取简历","简历通过","一面通过","二面通过","终面通过","Offer"];
+var FLAGS={"英国区":"🇬🇧","丹麦区":"🇩🇰","比利时区":"🇧🇪","意大利区":"🇮🇹","匈牙利区":"🇭🇺","西班牙区":"🇪🇸","爱尔兰区":"🇮🇪","荷兰区":"🇳🇱","法国区CE":"🇫🇷","日本区":"🇯🇵","澳洲区":"🇦🇺","北美区":"🇺🇸"};
+var charts={};
+Chart.register(ChartDataLabels);
+setTimeout(function(){if(typeof D!=="undefined")initAll();else console.error("D not loaded");},0);
+function flag(d){return (FLAGS[d]?FLAGS[d]+" ":"")+d;}
+function fmtRate(v){if(v==null)return "-";if(v<=1)return Math.round(v*1000)/10+"%";return Math.round(v)+"%";}
+function calcDeptRate(deptData,numer,demon){if(!demon||!deptData[demon])return "-";var n=deptData[numer]||0,d=deptData[demon]||0;if(!d)return "-";return Math.round(n/d*1000)/10+"%";}
+function avgPosRate(list,deptKey,field){var rates=[],sum=0,cnt=0;D.positions_all.forEach(function(p){if(p[deptKey]===list&&p[field]!=null){sum+=p[field];cnt++;}});if(!cnt)return "-";return Math.round(sum/cnt*1000)/10+"%";}
+function initAll(){var sc=D.status_counts,tr=D.total_real,r=D.rates,f=D.fnl_total;var rp=f["简历通过数"];var onboardRate=(sc["已入职"]/f["Offer数"]*100).toFixed(1);document.getElementById("kpiRow").innerHTML='<div class="kpi-card"><div class="kpi-label">全年岗位总数</div><div class="kpi-val" style="color:var(--accent)">'+tr+'</div><div class="kpi-tags"><span class="kpi-tag tag-blue">已入职 '+(sc["已入职"]||0)+'</span><span class="kpi-tag tag-green">Offer待入职 '+(sc["已发offer待入职"]||0)+'</span><span class="kpi-tag tag-amber">招聘中 '+(sc["正常招聘"]||0)+'</span></div></div><div class="kpi-card"><div class="kpi-label">简历筛选通过率</div><div class="kpi-val" style="color:var(--accent)">'+r["简历筛选通过率"]+'%</div><div class="kpi-tags"><span class="kpi-tag tag-blue">获取简历 '+f["推荐简历数"]+'</span><span class="kpi-tag tag-green">简历通过数 '+rp+'  </span ></div ></div ><div class="kpi-card"><div class="kpi-label">一二面通过率</div><div class="kpi-val" style="color:var(--amber)">'+r["一二面通过率"]+'%</div><div class="kpi-tags"><span class="kpi-tag tag-amber">一二面通过 '+f["二面通过数"]+' / 简历通过数 '+rp+'</span></div></div><div class="kpi-card"><div class="kpi-label">终面通过率</div><div class="kpi-val" style="color:var(--red)">'+r["终面通过率"]+'%</div><div class="kpi-tags"><span class="kpi-tag tag-red">终面通过 '+f["终面通过数"]+' / 简历通过数 '+rp+'</span></div></div><div class="kpi-card"><div class="kpi-label">Offer接受率 / 入职到岗率</div><div style="display:flex;align-items:center;gap:16px"><div><div class="kpi-val" style="color:var(--green);font-size:28px">'+r["Offer接受率"]+'%</div><div style="font-size:10px;color:var(--text2);margin-top:2px">Offer接受率</div></div><div style="width:1px;height:48px;background:#e5e7eb;flex-shrink:0"></div><div><div class="kpi-val" style="color:var(--accent);font-size:28px">'+onboardRate+'%</div><div style="font-size:10px;color:var(--text2);margin-top:2px">入职到岗率</div></div></div><div class="kpi-tags"><span class="kpi-tag tag-green">Offer '+f["Offer数"]+'</span><span class="kpi-tag tag-blue">入职到岗 '+(sc["已入职"]||0)+'</span></div></div>';rTab1();rTab2();rDept();rPerson();rAlert();}
+function mkChart(id,type,data,opts){if(charts[id])charts[id].destroy();var dft={responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:10}}}}};charts[id]=new Chart(document.getElementById(id).getContext("2d"),{type:type,data:data,options:Object.assign(dft,opts||{})});}
+function rTab1(){var f=D.fnl_total;var vals=[f["推荐简历数"],f["简历通过数"],f["一面通过数"],f["二面通过数"],f["终面通过数"],f["Offer数"]];var rates=vals.map(function(v,i){return i===0?"100%":(v/vals[i-1]*100).toFixed(1)+"%";});mkChart("c-funnel","bar",{labels:FN_CN,datasets:[{data:vals,backgroundColor:["#E8A87C","#F4C430","#6DAF6D","#5B9BD5","#9B59B6","#E74C3C"],borderRadius:2}]},{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.raw+" 人";},afterLabel:function(c){return "转化率: "+rates[c.dataIndex];}}}}});mkChart("c-rate","bar",{labels:["简历筛选","一二面通过率","终面通过率","Offer接受率"],datasets:[{data:[D.rates["简历筛选通过率"],D.rates["一二面通过率"],D.rates["终面通过率"],D.rates["Offer接受率"]],backgroundColor:C.slice(0,4).map(function(c){return c+"99";}),borderColor:C.slice(0,4),borderWidth:1.5,borderRadius:4}]},{plugins:{legend:{display:false},datalabels:{anchor:"end",align:"end",offset:0,font:{size:10,weight:"bold"},color:"#444",formatter:function(v){return v+"%";}},tooltip:{callbacks:{label:function(c){var v=c.raw;var rp=D.fnl_total["简历通过数"];if(c.dataIndex===0)return "获取简历 "+D.fnl_total["推荐简历数"]+"/简历通过数 "+rp+" ("+v+"%)";if(c.dataIndex===1)return "一二面通过 "+D.fnl_total["二面通过数"]+"/简历通过数 "+rp+" ("+v+"%)";else if(c.dataIndex===2)return "终面通过 "+D.fnl_total["终面通过数"]+"/简历通过数 "+rp+" ("+v+"%)";return "Offer "+D.fnl_total["Offer数"]+"/终面通过 "+D.fnl_total["终面通过数"]+" ("+v+"%)";}}}},scales:{x:{grid:{display:false},ticks:{display:true,font:{size:10}}},y:{grid:{display:false},ticks:{display:true,font:{size:10},callback:function(v){return v+"%";}},beginAtZero:true,max:100}}});rdt();}
+function rdt(){var s=document.getElementById("dtSearch").value.toLowerCase();var st=document.getElementById("dtStatus").value;var rg=document.getElementById("dtRegion").value;var ct=document.getElementById("dtCat").value;var base=D.positions_detail||D.positions;if(st==="暂停招聘")base=D.positions_all;var statusOrder={"正常招聘":0,"已发offer待入职":1,"已入职":2,"暂停招聘":3};var filtered=base.filter(function(p){if(st!=="all"&&p.岗位状态!==st)return false;if(rg!=="all"&&p.区域!==rg)return false;if(ct!=="all"&&p.岗位类别!==ct)return false;if(s&&(p.职位名称+" "+p.部门+" "+p.招聘负责人+" "+p.需求编号).toLowerCase().indexOf(s)<0)return false;return true;});filtered.sort(function(a,b){return (a.岗位状态 in statusOrder?statusOrder[a.岗位状态]:9)-(b.岗位状态 in statusOrder?statusOrder[b.岗位状态]:9);});var cols=[["部门","部门",110],["职位名称","职位"],["招聘负责人","负责人",80],["岗位类别","类别",50],["需求职级","职级",55],["新增替补","新/替",50],["区域","区域",50],["岗位状态","状态",100],["推荐简历数","CV",45],["简历通过数","简历",45],["一面通过数","一面",45],["二面通过数","二面",45],["终面通过数","终面",45],["Offer数","Offer",55],["简历筛选通过率","CV通过率",68],["一面通过率","一面率",60],["二面通过率","二面率",60],["终面通过率","终面率",60],["Offer接受率","Offer率",60],["入职到岗率","到岗率",60]];var h='<table class="dt"><thead><tr>';cols.forEach(function(c){h+='<th style="width:'+((c.length>2&&c[2])?c[2]+"px":"auto")+'">'+c[1]+'</th>';});h+="</tr></thead><tbody>";if(!filtered.length)h+='<tr><td colspan="'+cols.length+'" style="text-align:center;padding:24px;color:var(--text2)">无匹配数据</td></tr>';else filtered.forEach(function(p){var st2=p.岗位状态;var rc=st2==="正常招聘"?"row-zp":st2==="已发offer待入职"?"row-off":st2==="已入职"?"row-done":"row-pause";h+='<tr class="'+rc+'">';cols.forEach(function(c){var v=p[c[0]];if(c[0]==="部门")v="<b>"+p.部门+"</b>";else if(c[0]==="岗位状态"){var cl=st2==="已入职"?"b-done":st2==="已发offer待入职"?"b-off":st2==="暂停招聘"?"b-pause":"b-zp";v='<span class="badge '+cl+'">'+st2+'</span>';}else if(c[0].indexOf("通过率")>=0||c[0].indexOf("接受率")>=0||c[0].indexOf("到岗率")>=0){v=fmtRate(p[c[0]]);}else{v=v||"";}h+="<td>"+v+"</td>";});h+="</tr>";});h+='</tbody></table><div style="font-size:10px;color:var(--text2);margin-top:5px">共 '+filtered.length+' 条（正常招聘 '+filtered.filter(function(p){return p.岗位状态==="正常招聘";}).length+'，已发Offer待入职 '+filtered.filter(function(p){return p.岗位状态==="已发offer待入职";}).length+'，已入职 '+filtered.filter(function(p){return p.岗位状态==="已入职";}).length+'，暂停招聘 '+filtered.filter(function(p){return p.岗位状态==="暂停招聘";}).length+'）</div>';document.getElementById("detailTbl").innerHTML=h;}(function(){var cts=[];D.positions_detail.forEach(function(p){if(cts.indexOf(p.岗位类别)<0&&p.岗位类别)cts.push(p.岗位类别);});cts.sort();var ch="";cts.forEach(function(c){ch+='<option value="'+c+'">'+c+'</option>';});document.getElementById("dtCat").innerHTML='<option value="all" selected>全部类别</option>'+ch;})();
+function rTab2(){var ip=D.in_progress;var f={};["推荐简历数","简历通过数","一面通过数","二面通过数","终面通过数","Offer数"].forEach(function(k){f[k]=ip.reduce(function(s,p){return s+(p[k]||0);},0);});mkChart("c-curfunnel","bar",{labels:FN_CN,datasets:[{data:[f["推荐简历数"],f["简历通过数"],f["一面通过数"],f["二面通过数"],f["终面通过数"],f["Offer数"]],backgroundColor:["#E8A87C","#F4C430","#6DAF6D","#5B9BD5","#9B59B6","#E74C3C"],borderRadius:2}]},{indexAxis:"y",plugins:{legend:{display:false}}});var dd={};ip.forEach(function(p){dd[p.部门]=(dd[p.部门]||0)+1;});var de=Object.entries(dd).sort(function(a,b){return b[1]-a[1];});mkChart("c-curdept","bar",{labels:de.map(function(e){return e[0];}),datasets:[{data:de.map(function(e){return e[1];}),backgroundColor:C.slice(0,de.length).map(function(c){return c+"99";}),borderColor:C.slice(0,de.length),borderWidth:1,borderRadius:3}]},{indexAxis:"y",plugins:{legend:{display:false}}});var deps=[];ip.forEach(function(p){if(deps.indexOf(p.部门)<0&&p.部门)deps.push(p.部门);});deps.sort();var dh="";deps.forEach(function(d){dh+='<option value="'+d+'">'+d+'</option>';});document.getElementById("curDept").innerHTML='<option value="all" selected>全部部门</option>'+dh;rCurTbl();}
+function rCurTbl(){var s=document.getElementById("curSearch").value.toLowerCase();var st=document.getElementById("curStatus").value;var dp=document.getElementById("curDept").value;var statusOrder={"正常招聘":0,"已发offer待入职":1};var filtered=D.in_progress.filter(function(p){if(st!=="all"&&p.岗位状态!==st)return false;if(dp!=="all"&&p.部门!==dp)return false;if(s&&(p.职位名称+" "+p.部门+" "+p.招聘负责人+" "+p.需求编号).toLowerCase().indexOf(s)<0)return false;return true;});filtered.sort(function(a,b){return (a.岗位状态 in statusOrder?statusOrder[a.岗位状态]:9)-(b.岗位状态 in statusOrder?statusOrder[b.岗位状态]:9);});var cols=[["需求编号","需求编码",80],["职位名称","职位"],["部门","部门"],["区域","区域",45],["招聘负责人","负责人"],["岗位状态","状态",100],["推荐简历数","CV",45],["简历通过数","简历",45],["一面通过数","一面",45],["二面通过数","二面",45],["终面通过数","终面",45],["Offer数","Offer",55],["简历筛选通过率","CV通过率",68],["一面通过率","一面率",60],["二面通过率","二面率",60],["终面通过率","终面率",60],["Offer接受率","Offer率",60],["入职到岗率","到岗率",60]];var h='<table class="dt"><thead><tr>';cols.forEach(function(c){h+='<th style="width:'+((c.length>2&&c[2])?c[2]+"px":"auto")+'">'+c[1]+'</th>';});h+="</tr></thead><tbody>";filtered.forEach(function(p){var rc=p.岗位状态==="正常招聘"?"row-zp":"row-off";h+='<tr class="'+rc+'">';cols.forEach(function(c){var v=p[c[0]];if(c[0]==="部门")v="<b>"+p.部门+"</b>";else if(c[0]==="岗位状态")v='<span class="badge '+(v==="已发offer待入职"?"b-off":"b-zp")+'">'+v+'</span>';else if(c[0].indexOf("通过率")>=0||c[0].indexOf("接受率")>=0||c[0].indexOf("到岗率")>=0){v=fmtRate(p[c[0]]);}else{v=v||"";}h+="<td>"+v+"</td>";});h+="</tr>";});h+='</tbody></table><div style="font-size:10px;color:var(--text2);margin-top:5px">共 '+filtered.length+' 个在招岗位（招聘中 '+filtered.filter(function(p){return p.岗位状态==="正常招聘";}).length+'，已发Offer待入职 '+filtered.filter(function(p){return p.岗位状态==="已发offer待入职";}).length+'）</div>';document.getElementById("curTbl").innerHTML=h;}
+function rDept(){var da={};D.positions_all.forEach(function(p){var d=p.部门;if(!d)return;if(!da[d])da[d]={岗位数:0,已入职:0,已发offer待入职:0,招聘中:0,提前启动:0,推荐简历数:0,简历通过数:0,一面通过数:0,二面通过数:0,终面通过数:0,Offer数:0};da[d].岗位数++;if(p.岗位状态==="已入职")da[d].已入职++;else if(p.岗位状态==="已发offer待入职")da[d].已发offer待入职++;else if(p.岗位状态==="正常招聘")da[d].招聘中++;else if(p.岗位状态==="提前启动，暂未提单")da[d].提前启动++;da[d].推荐简历数+=p.推荐简历数||0;da[d].简历通过数+=p.简历通过数||0;da[d].一面通过数+=p.一面通过数||0;da[d].二面通过数+=p.二面通过数||0;da[d].终面通过数+=p.终面通过数||0;da[d].Offer数+=p.Offer数||0;});var deptOrder=["PBU HRBP Dept.","销售客服部","交付运营部","经营管理部","PBU技术部","四海捷运项目部","跨综","日本区","澳洲区","北美区","荷兰区","英国区","丹麦区","法国区CE","比利时区","意大利区","匈牙利区","西班牙区"];var dl=[];deptOrder.forEach(function(dn){for(var k in da){if(k===dn||k.indexOf(dn)>=0){dl.push({部门:k,data:da[k]});delete da[k];break;}}});for(var k in da)dl.push({部门:k,data:da[k]});var fLabels=dl.map(function(e){return flag(e.部门);});var fCV=dl.map(function(e){return e.data.推荐简历数;});var fOffer=dl.map(function(e){return e.data.Offer数;});mkChart("c-deptfunnel","bar",{labels:fLabels,datasets:[{label:"推荐CV",data:fCV,backgroundColor:"#E8A87C",borderRadius:2},{label:"Offer",data:fOffer,backgroundColor:"#E74C3C",borderRadius:2}]},{indexAxis:"y",plugins:{legend:{position:"top",labels:{font:{size:10},boxWidth:12}},datalabels:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{display:false},ticks:{font:{size:10}}}}});var sLabels=dl.map(function(e){return flag(e.部门);});var sDone=dl.map(function(e){return e.data.已入职;});var sOff=dl.map(function(e){return e.data.已发offer待入职;});var sZp=dl.map(function(e){return e.data.招聘中;});var sPre=dl.map(function(e){return e.data.提前启动;});mkChart("c-deptstatus","bar",{labels:sLabels,datasets:[{label:"已入职",data:sDone,backgroundColor:"#3b82f6",borderRadius:0},{label:"Offer待入职",data:sOff,backgroundColor:"#10b981",borderRadius:0},{label:"招聘中",data:sZp,backgroundColor:"#f59e0b",borderRadius:0},{label:"提前启动",data:sPre,backgroundColor:"#8b5cf6",borderRadius:0}]},{indexAxis:"y",plugins:{legend:{position:"top",labels:{font:{size:10},boxWidth:12}},datalabels:{display:false}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9}}},y:{stacked:true,grid:{display:false},ticks:{font:{size:10}}}}});var h='<table class="dt"><thead><tr><th>部门</th><th>岗位数</th><th>已入职</th><th>Offer待入职</th><th>招聘中</th><th>推荐CV</th><th>简历通过</th><th>一面通过</th><th>终面通过</th><th>Offer</th><th>CV通过率</th><th>一面率</th><th>二面率</th><th>终面率</th><th>Offer率</th><th>到岗率</th></tr></thead><tbody>';dl.forEach(function(e){var d=e.data;h+='<tr><td><b>'+flag(e.部门)+'</b></td><td>'+d.岗位数+'</td><td style="color:var(--accent)">'+d.已入职+'</td><td style="color:var(--green)">'+d.已发offer待入职+'</td><td style="color:var(--amber)">'+d.招聘中+'</td><td>'+d.推荐简历数+'</td><td>'+d.简历通过数+'</td><td>'+d.一面通过数+'</td><td>'+d.终面通过数+'</td><td>'+d.Offer数+'</td><td>'+calcDeptRate(d,"简历通过数","推荐简历数")+'</td><td>'+calcDeptRate(d,"一面通过数","简历通过数")+'</td><td>'+calcDeptRate(d,"二面通过数","简历通过数")+'</td><td>'+calcDeptRate(d,"终面通过数","简历通过数")+'</td><td>'+calcDeptRate(d,"Offer数","终面通过数")+'</td><td>'+avgPosRate(e.部门,"部门","入职到岗率")+'</td></tr>';});h+="</tbody></table>";document.getElementById("deptTbl").innerHTML=h;}
+function rPerson(){
+var pd=D.person_data||{},pl=Object.keys(pd).map(function(k){return {name:k,data:pd[k]};});
+if(!pl.length)return;
+
+// Chart 1: CV-to-Offer conversion rate ranking
+var rateRank=pl.map(function(e){var d=e.data,cv=d.推荐简历数||0,of=d.Offer数||0;return {name:e.name,rate:cv?Math.round(of/cv*1000)/10:0};});
+rateRank.sort(function(a,b){return b.rate-a.rate;});
+mkChart("c-person-rate","bar",{
+labels:rateRank.map(function(r){return r.name;}),
+datasets:[{data:rateRank.map(function(r){return r.rate;}),backgroundColor:C.slice(0,rateRank.length).map(function(c){return c+"99";}),borderColor:C.slice(0,rateRank.length),borderWidth:1,borderRadius:3}]
+},{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return "CV-to-Offer: "+c.raw+"%";}}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{display:false},ticks:{font:{size:10}}}}});
+
+// Chart 2: Offer output ranking
+var offerRank=pl.map(function(e){return {name:e.name,offer:e.data.Offer数||0};});
+offerRank.sort(function(a,b){return b.offer-a.offer;});
+mkChart("c-person-offer","bar",{
+labels:offerRank.map(function(r){return r.name;}),
+datasets:[{data:offerRank.map(function(r){return r.offer;}),backgroundColor:C.slice(0,offerRank.length).map(function(c){return c+"99";}),borderColor:C.slice(0,offerRank.length),borderWidth:1,borderRadius:3}]
+},{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.raw+" Offer";}}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{display:false},ticks:{font:{size:10}}}}});
+
+// Leaderboard: sorted by Offer count desc
+pl.sort(function(a,b){return (b.data.Offer数||0)-(a.data.Offer数||0);});
+var h='<table class="dt"><thead><tr><th>排名</th><th>负责人</th><th>岗位数</th><th>已入职</th><th>Offer待</th><th>招聘中</th><th>推荐CV</th><th>简历通过</th><th>一面通过</th><th>Offer</th><th>CV通过率</th><th>一面率</th><th>二面率</th><th>终面率</th><th>Offer率</th><th>到岗率</th></tr></thead><tbody>';
+pl.forEach(function(e,i){var d=e.data,cv=d.推荐简历数||0,rv=d.简历通过数||0,m1=d.一面通过数||0,m2=d.二面通过数||0,fn=d.终面通过数||0,o=d.Offer数||0;
+h+='<tr><td style="font-weight:700;text-align:center">'+(i+1)+'</td><td><b>'+e.name+'</b></td><td>'+(d.岗位数||0)+'</td>'+
+'<td style="color:var(--accent)">'+(d.已入职||0)+'</td><td style="color:var(--green)">'+(d.已发offer待入职||0)+'</td><td style="color:var(--amber)">'+(d.招聘中||0)+'</td>'+
+'<td>'+cv+'</td><td>'+rv+'</td><td>'+m1+'</td><td>'+o+'</td>'+
+'<td>'+calcDeptRate(d,"简历通过数","推荐简历数")+'</td><td>'+calcDeptRate(d,"一面通过数","简历通过数")+'</td><td>'+calcDeptRate(d,"二面通过数","简历通过数")+'</td><td>'+calcDeptRate(d,"终面通过数","简历通过数")+'</td><td>'+calcDeptRate(d,"Offer数","终面通过数")+'</td><td>'+calcDeptRate(d,"已入职","Offer数")+'</td></tr>';});
+h+="</tbody></table>";
+document.getElementById("personTbl").innerHTML=h;
+}
+function rAlert(){var ap=D.alert_positions||[];var cols=[["部门","部门",110],["职位名称","职位"],["需求编号","需求编码",80],["招聘负责人","负责人",80],["岗位状态","状态",100],["已招聘天数","已招天数",70],["岗位标准招聘周期","标准周期",70],["招聘周期结束时间","周期结束",105],["超周期天数","超期/剩余",70],["推荐简历数","CV",45],["简历通过数","简历",45],["Offer数","Offer",55],["简历筛选通过率","CV通过率",68],["终面通过率","终面率",60],["Offer接受率","Offer率",60]];var h='<table class="dt"><thead><tr>';cols.forEach(function(c){h+='<th style="width:'+((c.length>2&&c[2])?c[2]+"px":"auto")+'">'+c[1]+'</th>';});h+="</tr></thead><tbody>";if(!ap.length)h+='<tr><td colspan="'+cols.length+'" style="text-align:center;padding:24px;color:var(--text2)">🎉 当前没有超周期或即将超周期的岗位</td></tr>';else ap.forEach(function(p){var rc=p.岗位状态==="正常招聘"?"row-zp":"row-off";var ov=p.超周期天数;var ovDisp=ov!==null?(ov>=0?'超期 <b style="color:#ef4444">'+ov+'天</b>':'剩余 <b style="color:#f59e0b">'+Math.abs(ov)+'天</b>'):"-";h+='<tr class="'+rc+'">';cols.forEach(function(c){var v=p[c[0]];if(c[0]==="部门")v="<b>"+p.部门+"</b>";else if(c[0]==="岗位状态")v='<span class="badge '+(v==="已发offer待入职"?"b-off":"b-zp")+'">'+v+'</span>';else if(c[0]==="超周期天数"){v=ovDisp;}else if(c[0].indexOf("通过率")>=0||c[0].indexOf("接受率")>=0){v=fmtRate(p[c[0]]);}else{v=v||"";}h+="<td>"+v+"</td>";});h+="</tr>";});h+='</tbody></table><div style="font-size:10px;color:var(--text2);margin-top:5px">共 '+ap.length+' 个预警岗位（已超期 '+ap.filter(function(p){return p.超周期天数>=0;}).length+'，14天内到期 '+ap.filter(function(p){var o=p.超周期天数;return o!==null&&o<0&&o>=-14;}).length+'）</div>';document.getElementById("alertTbl").innerHTML=h;}
+document.querySelectorAll(".tab-btn").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".tab-btn").forEach(function(x){x.classList.remove("active");});b.classList.add("active");document.querySelectorAll(".tab-content").forEach(function(x){x.classList.remove("active");});document.getElementById("tab-"+b.dataset.tab).classList.add("active");});});
+</script>
+</body>
+</html>
